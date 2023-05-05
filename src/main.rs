@@ -46,12 +46,12 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
 const LEMONS_KEY: Key = Key::from_static_str("lemons");
 const ANOTHER_KEY: Key = Key::from_static_str("ex.com/another");
 
-static COMMON_ATTRIBUTES: Lazy<[KeyValue; 4]> = Lazy::new(|| {
+static COMMON_ATTRIBUTES: Lazy<[KeyValue; 1]> = Lazy::new(|| {
     [
-        LEMONS_KEY.i64(10),
+        // LEMONS_KEY.i64(10),
         KeyValue::new("A", "1"),
-        KeyValue::new("B", "2"),
-        KeyValue::new("C", "3"),
+        // KeyValue::new("B", "2"),
+        // KeyValue::new("C", "3"),
     ]
 });
 
@@ -68,15 +68,27 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     let meter = global::meter("ex.com/basic");
 
     let gauge = meter
-        .f64_observable_gauge("ex.com.one")
-        .with_description("A gauge set to 1.0")
+        .f64_observable_gauge("gauge")
+        .with_description("A gauge set to e")
+        .init();
+
+    let counter = meter
+        .f64_observable_counter("counter")
+        .with_description("A counter set to pi")
         .init();
 
     meter.register_callback(&[gauge.as_any()], move |observer| {
-        observer.observe_f64(&gauge, 1.0, COMMON_ATTRIBUTES.as_ref())
+        observer.observe_f64(&gauge, std::f64::consts::E, COMMON_ATTRIBUTES.as_ref());
     })?;
 
-    let histogram = meter.f64_histogram("ex.com.two").init();
+    meter.register_callback(&[counter.as_any()], move |observer| {
+        observer.observe_f64(&counter, std::f64::consts::PI, COMMON_ATTRIBUTES.as_ref());
+    })?;
+
+    let histogram = meter.f64_histogram("histogram")
+        .with_unit(metrics::Unit::new("cm"))
+        .with_description("Some HSTG")
+        .init();
     histogram.record(&cx, 5.5, COMMON_ATTRIBUTES.as_ref());
 
     tracer.in_span("operation", |cx| {
@@ -98,6 +110,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     });
 
     shutdown_tracer_provider();
+    meter_provider.force_flush(&cx)?;
     meter_provider.shutdown()?;
 
     Ok(())
