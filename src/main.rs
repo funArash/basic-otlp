@@ -1,3 +1,5 @@
+mod resource;
+
 use once_cell::sync::Lazy;
 use opentelemetry_api::global;
 // use opentelemetry_api::global::shutdown_tracer_provider;
@@ -8,9 +10,11 @@ use opentelemetry_api::{
     Context, KeyValue,
 };
 use opentelemetry_otlp::{ExportConfig, WithExportConfig};
-use opentelemetry_sdk::{metrics::MeterProvider, runtime}; //, Resource};
+use opentelemetry_sdk::{metrics::MeterProvider, runtime, Resource};
 use std::error::Error;
 use std::time::Duration;
+
+use crate::resource::resource_new;
 
 // fn init_tracer() -> Result<sdktrace::Tracer, TraceError> {
 //     opentelemetry_otlp::new_pipeline()
@@ -29,11 +33,20 @@ use std::time::Duration;
 //         .install_batch(runtime::Tokio)
 // }
 
+const MY_NAME_SPACE: &str = "MyNameSpace";
+const RESOURCE_KEY: &str = "resource";
+const INSTANCE_KEY: &str = "instance";
+const MY_RESOURCE_NAME: &str = "MyResource";
+const MY_INSTANCE_NAME: &str = "MyInstance";
+
 fn init_metrics() -> metrics::Result<MeterProvider> {
     let export_config = ExportConfig {
         endpoint: "http://localhost:4317".to_string(),
         ..ExportConfig::default()
     };
+    let kvps = vec![KeyValue::new(RESOURCE_KEY, MY_RESOURCE_NAME), KeyValue::new(INSTANCE_KEY,MY_INSTANCE_NAME)];
+    let kvps = resource_new(kvps, Some(MY_NAME_SPACE));
+
     opentelemetry_otlp::new_pipeline()
         .metrics(runtime::Tokio)
         .with_exporter(
@@ -43,7 +56,7 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
         )
         .with_period(Duration::from_secs(1))
         // .with_aggregation_selector(selector)
-        // .with_resource(resource)
+        .with_resource(Resource::new(kvps))
         .build()
 }
 
