@@ -1,5 +1,5 @@
-mod resource;
 mod aggregator;
+mod resource;
 
 use once_cell::sync::Lazy;
 use opentelemetry_api::global;
@@ -8,7 +8,8 @@ use opentelemetry_api::global;
 use opentelemetry_api::{
     metrics,
     // trace::{TraceContextExt, Tracer},
-    Context, KeyValue,
+    Context,
+    KeyValue,
 };
 use opentelemetry_otlp::{ExportConfig, WithExportConfig};
 use opentelemetry_sdk::{metrics::MeterProvider, runtime, Resource};
@@ -46,7 +47,10 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
         endpoint: "http://localhost:4317".to_string(),
         ..ExportConfig::default()
     };
-    let kvps = vec![KeyValue::new(RESOURCE_KEY, MY_RESOURCE_NAME), KeyValue::new(INSTANCE_KEY,MY_INSTANCE_NAME)];
+    let kvps = vec![
+        KeyValue::new(RESOURCE_KEY, MY_RESOURCE_NAME),
+        KeyValue::new(INSTANCE_KEY, MY_INSTANCE_NAME),
+    ];
     let kvps = resource_new(kvps, Some(MY_NAME_SPACE));
 
     opentelemetry_otlp::new_pipeline()
@@ -106,7 +110,8 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         observer.observe_f64(&counter, std::f64::consts::PI, COMMON_ATTRIBUTES.as_ref());
     })?;
 
-    let histogram = meter.f64_histogram("histogram")
+    let histogram = meter
+        .f64_histogram("histogram")
         .with_unit(metrics::Unit::new("cm"))
         .with_description("Some HSTG")
         .init();
