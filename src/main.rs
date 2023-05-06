@@ -1,4 +1,5 @@
 mod resource;
+mod aggregator;
 
 use once_cell::sync::Lazy;
 use opentelemetry_api::global;
@@ -14,6 +15,7 @@ use opentelemetry_sdk::{metrics::MeterProvider, runtime, Resource};
 use std::error::Error;
 use std::time::Duration;
 
+use crate::aggregator::MyAggregationSelector;
 use crate::resource::resource_new;
 
 // fn init_tracer() -> Result<sdktrace::Tracer, TraceError> {
@@ -55,7 +57,7 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
                 .with_export_config(export_config),
         )
         .with_period(Duration::from_secs(1))
-        // .with_aggregation_selector(selector)
+        .with_aggregation_selector(MyAggregationSelector)
         .with_resource(Resource::new(kvps))
         .build()
 }
