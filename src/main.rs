@@ -100,10 +100,14 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         .with_description("A counter set to pi")
         .init();
 
+    gauge.observe(std::f64::consts::E, COMMON_ATTRIBUTES.as_ref());
+
     meter.register_callback(&[gauge.as_any()], move |observer| {
         println!("{:?}", gauge);
         observer.observe_f64(&gauge, std::f64::consts::E, COMMON_ATTRIBUTES.as_ref());
     })?;
+
+    counter.observe(std::f64::consts::PI, COMMON_ATTRIBUTES.as_ref());
 
     meter.register_callback(&[counter.as_any()], move |observer| {
         println!("{:?}", counter);
