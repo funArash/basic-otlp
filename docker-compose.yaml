@@ -15,6 +15,7 @@ services:
     command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./ca-cert.pem:/etc/ca-cert.pem
       - ./server.crt:/etc/server.crt
       - ./server.key:/etc/server.key
     ports:

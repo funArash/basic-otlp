@@ -4,11 +4,15 @@ receivers:
       http:
         endpoint: :4318
         tls:
+          ca_file: /etc/ca-cert.pem
+          client_ca_file: /etc/ca-cert.pem
           cert_file: /etc/server.crt
           key_file: /etc/server.key
       grpc:
         endpoint: :4317
         tls:
+          client_ca_file: /etc/ca-cert.pem
+          ca_file: /etc/ca-cert.pem
           cert_file: /etc/server.crt
           key_file: /etc/server.key
 

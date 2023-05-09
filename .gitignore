@@ -1,2 +1,6 @@
 server.crt
 server.key
+client.crt
+client.key
+ca-cert.pem
+ca-key.pem

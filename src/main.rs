@@ -13,6 +13,7 @@ use opentelemetry_api::{
 };
 use opentelemetry_otlp::{WithExportConfig};
 use opentelemetry_sdk::{metrics::MeterProvider, runtime, Resource};
+use tonic::transport::{Certificate, Identity};
 use tonic::{
     metadata::{MetadataKey, MetadataMap},
     transport::ClientTlsConfig,
@@ -54,6 +55,9 @@ const MY_INSTANCE_NAME: &str = "MyInstance";
 // Use the variables to try and export the example to any external collector that accepts otlp
 // like: oltp itself, honeycomb or lightstep
 const ENDPOINT: &str = "OTLP_TONIC_ENDPOINT";
+const CA_FILE: &str = "OTLP_TONIC_CA_FILE";
+const IDENT_FILE: &str = "OTLP_TONIC_IDENT_FILE";
+const CA_DOMAIN: &str = "OTLP_TONIC_CA_DOMAIN";
 const HEADER_PREFIX: &str = "OTLP_TONIC_";
 
 fn init_metrics() -> metrics::Result<MeterProvider> {
@@ -78,6 +82,47 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
         metadata.insert(MetadataKey::from_str(&key).unwrap(), value.parse().unwrap());
     }
 
+    let ca_domain = var(CA_DOMAIN).unwrap_or_else(|_| {
+        panic!("You must specify a ca DOMAIN to connect to with the variable {CA_DOMAIN:?}.",)
+    });
+
+    let ca_file = var(CA_FILE).unwrap_or_else(|_| {
+        panic!("You must specify a ca file to connect to with the variable {CA_FILE:?}.",)
+    });
+    let ca: Certificate;
+    let pem = std::fs::read_to_string(ca_file);
+    match pem {
+        Ok(pem) => ca = Certificate::from_pem(pem),
+        Err(err) => panic!("{err}"), 
+    }
+
+    let ident_file = var(IDENT_FILE).unwrap_or_else(|_| {
+        panic!("You must specify a ident file to connect to with the variable {IDENT_FILE:?}.",)
+    });
+
+    let ident: Identity;
+    let crt_pem;
+    let key_pem;
+    let ident_file= std::path::PathBuf::from(ident_file);
+    let crt_file= ident_file.join("client.crt");
+    println!("{:?}", crt_file);
+    let key_file= ident_file.join("client.key");
+    println!("{:?}", key_file);
+    let pem = std::fs::read_to_string(crt_file);
+
+    match pem {
+        Ok(pem) => crt_pem = pem,
+        Err(err) => panic!("{err}"), 
+    }
+
+    let pem = std::fs::read_to_string(key_file);
+    match pem {
+        Ok(pem) => key_pem = pem,
+        Err(err) => panic!("{err}"), 
+    }
+
+    ident = Identity::from_pem(crt_pem, key_pem);
+
     // let export_config = ExportConfig {
     //     endpoint: "http://localhost:4317".to_string(),
     //     ..ExportConfig::default()
@@ -100,7 +145,10 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
                         endpoint
                             .host_str()
                             .expect("the specified endpoint should have a valid host"),
-                    ),
+                    )
+                    .ca_certificate(ca)
+                    .domain_name(ca_domain)
+                    .identity(ident),
                 ),
         )
         // .with_period(Duration::from_secs(0))
