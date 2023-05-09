@@ -4,6 +4,12 @@ This example shows basic span and metric usage, and exports to the [OpenTelemetr
 
 ## Usage
 
+### `openssl`
+
+```shell
+openssl req -x509 -newkey rsa:4096 -keyout server.key -out server.crt -sha256 -days 3650 -nodes -subj "/C=XX/ST=StateName/L=CityName/O=CompanyName/OU=CompanySectionName/CN=CommonNameOrHostname"
+```
+
 ### `docker-compose`
 
 By default runs against the `otel/opentelemetry-collector-dev:latest` image, and uses the `tonic`'s
