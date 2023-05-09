@@ -2,7 +2,17 @@ receivers:
   otlp:
     protocols:
       http:
+        endpoint: 4318
+        tls:
+          cert_file: http_server.crt
+          key_file: http_server.key
+          insecure: true
       grpc:
+        endpoint: 4317
+        tls:
+          cert_file: grpc_server.crt
+          key_file: grpc_server.key
+          insecure: true
 
 exporters:
   logging:
