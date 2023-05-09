@@ -60,7 +60,7 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
                 .tonic()
                 .with_export_config(export_config),
         )
-        .with_period(Duration::from_secs(1))
+        // .with_period(Duration::from_secs(0))
         .with_aggregation_selector(MyAggregationSelector)
         .with_resource(Resource::new(kvps))
         .build()
@@ -99,6 +99,13 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         .f64_observable_counter("counter")
         .with_description("A counter set to pi")
         .init();
+
+    let scounter = meter.u64_counter("some_counter")
+        .with_description("sync_counter")
+        .init();
+
+    scounter.add(&cx, 100, COMMON_ATTRIBUTES.as_ref());
+    println!("{:?}", scounter);
 
     gauge.observe(std::f64::consts::E, COMMON_ATTRIBUTES.as_ref());
 
@@ -139,7 +146,8 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     //     });
     // });
 
-    std::thread::sleep(Duration::from_secs(60));
+    // meter_provider.force_flush(&cx)?;
+    std::thread::sleep(Duration::from_millis(100));
     // shutdown_tracer_provider();
     meter_provider.force_flush(&cx)?;
     meter_provider.shutdown()?;
