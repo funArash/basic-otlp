@@ -11,10 +11,19 @@ use opentelemetry_api::{
     Context,
     KeyValue,
 };
-use opentelemetry_otlp::{ExportConfig, WithExportConfig};
+use opentelemetry_otlp::{WithExportConfig};
 use opentelemetry_sdk::{metrics::MeterProvider, runtime, Resource};
-use std::error::Error;
-use std::time::Duration;
+use tonic::{
+    metadata::{MetadataKey, MetadataMap},
+    transport::ClientTlsConfig,
+};
+use url::Url;
+use std::{
+    env::{remove_var, set_var, var, vars},
+    error::Error,
+    str::FromStr,
+    time::Duration,
+};
 
 use crate::aggregator::MyAggregationSelector;
 use crate::resource::resource_new;
@@ -42,11 +51,37 @@ const INSTANCE_KEY: &str = "instance";
 const MY_RESOURCE_NAME: &str = "MyResource";
 const MY_INSTANCE_NAME: &str = "MyInstance";
 
+// Use the variables to try and export the example to any external collector that accepts otlp
+// like: oltp itself, honeycomb or lightstep
+const ENDPOINT: &str = "OTLP_TONIC_ENDPOINT";
+const HEADER_PREFIX: &str = "OTLP_TONIC_";
+
 fn init_metrics() -> metrics::Result<MeterProvider> {
-    let export_config = ExportConfig {
-        endpoint: "http://localhost:4317".to_string(),
-        ..ExportConfig::default()
-    };
+    let endpoint = var(ENDPOINT).unwrap_or_else(|_| {
+        panic!("You must specify and endpoint to connect to with the variable {ENDPOINT:?}.",)
+    });
+    let endpoint = Url::parse(&endpoint).expect("endpoint is not a valid url");
+    remove_var(ENDPOINT);
+
+    let mut metadata = MetadataMap::new();
+    for (key, value) in vars()
+        .filter(|(name, _)| name.starts_with(HEADER_PREFIX))
+        .map(|(name, value)| {
+            let header_name = name
+                .strip_prefix(HEADER_PREFIX)
+                .map(|h| h.replace('_', "-"))
+                .map(|h| h.to_ascii_lowercase())
+                .unwrap();
+            (header_name, value)
+        })
+    {
+        metadata.insert(MetadataKey::from_str(&key).unwrap(), value.parse().unwrap());
+    }
+
+    // let export_config = ExportConfig {
+    //     endpoint: "http://localhost:4317".to_string(),
+    //     ..ExportConfig::default()
+    // };
     let kvps = vec![
         KeyValue::new(RESOURCE_KEY, MY_RESOURCE_NAME),
         KeyValue::new(INSTANCE_KEY, MY_INSTANCE_NAME),
@@ -58,7 +93,15 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
         .with_exporter(
             opentelemetry_otlp::new_exporter()
                 .tonic()
-                .with_export_config(export_config),
+                .with_endpoint(endpoint.as_str())
+                .with_metadata(metadata)
+                .with_tls_config(
+                    ClientTlsConfig::new().domain_name(
+                        endpoint
+                            .host_str()
+                            .expect("the specified endpoint should have a valid host"),
+                    ),
+                ),
         )
         // .with_period(Duration::from_secs(0))
         .with_aggregation_selector(MyAggregationSelector)
@@ -83,6 +126,10 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     // By binding the result to an unused variable, the lifetime of the variable
     // matches the containing block, reporting traces and metrics during the whole
     // execution.
+    if let Err(std::env::VarError::NotPresent) = var("RUST_LOG") {
+        set_var("RUST_LOG", "debug")
+    };
+    env_logger::init();
     // let _ = init_tracer()?;
     let meter_provider = init_metrics()?;
     let cx = Context::new();
