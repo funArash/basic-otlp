@@ -133,3 +133,7 @@ Value: 1.000000
 ```
 
 
+GRPC with tls
+```
+env OTLP_TONIC_ENDPOINT=https://localhost:4317 OTLP_TONIC_TLS_PATH=$(pwd) OTLP_TONIC_CA_DOMAIN=testserver.com cargo run
+```
