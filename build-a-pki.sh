@@ -2,6 +2,7 @@
 
 set -xe
 
+# Create a new "root" CA (Certificate of Authority)
 openssl req -nodes \
           -x509 \
           -days 3650 \
@@ -12,6 +13,7 @@ openssl req -nodes \
           -batch \
           -subj "/CN=ponytown RSA CA"
 
+# Create a new level 2 intermediate Cert and Key
 openssl req -nodes \
           -newkey rsa:3072 \
           -keyout inter.key \
@@ -20,6 +22,7 @@ openssl req -nodes \
           -batch \
           -subj "/CN=ponytown RSA level 2 intermediate"
 
+# Create a new Server Cert and Key
 openssl req -nodes \
           -newkey rsa:2048 \
           -keyout server.key \
@@ -34,6 +37,7 @@ openssl rsa \
           -in server.key \
           -out server.rsa
 
+# Create a new Client Cert and Key
 openssl req -nodes \
           -newkey rsa:2048 \
           -keyout client.key \
@@ -46,8 +50,9 @@ openssl rsa \
           -in client.key \
           -out client.rsa
 
-# ----------------------------------------------
+# ------------- Signing of the Certs and the level 2 intermediate CA -----------------
 
+# Signing of the level 2 intermediate CA with the new Root CA
 openssl x509 -req \
           -in inter.req \
           -out inter.cert \
@@ -58,6 +63,7 @@ openssl x509 -req \
           -set_serial 123 \
           -extensions v3_inter -extfile openssl.cnf
 
+# Signing of Server Cert with the new level 2 intermediate CA
 openssl x509 -req \
           -in server.req \
           -out server.cert \
@@ -68,6 +74,7 @@ openssl x509 -req \
           -set_serial 456 \
           -extensions v3_end -extfile openssl.cnf
 
+# Signing of Client Cert with the new level 2 intermediate CA
 openssl x509 -req \
           -in client.req \
           -out client.cert \
@@ -78,6 +85,7 @@ openssl x509 -req \
           -set_serial 789 \
           -extensions v3_client -extfile openssl.cnf
 
+# Packaging..
 cat inter.cert ca.cert > server.chain
 cat server.cert inter.cert ca.cert > server.fullchain
 
