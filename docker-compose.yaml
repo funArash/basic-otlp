@@ -15,8 +15,8 @@ services:
     command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-      - ./ca-cert.pem:/etc/ca-cert.pem
-      - ./server.crt:/etc/server.crt
+      - ./ca.cert:/etc/ca.cert
+      - ./server.cert:/etc/server.cert
       - ./server.key:/etc/server.key
     ports:
       - "1888:1888"   # pprof extension

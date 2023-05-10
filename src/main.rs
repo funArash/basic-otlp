@@ -90,7 +90,7 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
     });
     let ca: Certificate;
     let tls_path= std::path::PathBuf::from(tls_path);
-    let ca_file= tls_path.join("ca-cert.pem");
+    let ca_file= tls_path.join("ca.cert");
     println!("ca file: {:?}", ca_file);
     let pem = std::fs::read_to_string(ca_file);
     match pem {
@@ -101,7 +101,7 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
     let ident: Identity;
     let crt_pem;
     let key_pem;
-    let crt_file= tls_path.join("client.crt");
+    let crt_file= tls_path.join("client.cert");
     println!("{:?}", crt_file);
     let pem = std::fs::read_to_string(crt_file);
     match pem {
@@ -142,8 +142,8 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
                             .host_str()
                             .expect("the specified endpoint should have a valid host"),
                     )
-                    .ca_certificate(ca)
                     .domain_name(ca_domain)
+                    .ca_certificate(ca)
                     .identity(ident),
                 ),
         )
