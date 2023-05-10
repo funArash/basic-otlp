@@ -16,6 +16,8 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
       - ./ca.cert:/etc/ca.cert
+      - ./inter.cert:/etc/inter.cert
+      - ./client.cert:/etc/client.cert
       - ./server.cert:/etc/server.cert
       - ./server.key:/etc/server.key
     ports:

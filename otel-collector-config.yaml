@@ -4,12 +4,19 @@ receivers:
       http:
         endpoint: :4318
         tls:
-          ca_file: /etc/ca.cert
           cert_file: /etc/server.cert
           key_file: /etc/server.key
       grpc:
         endpoint: :4317
         tls:
+          cert_file: /etc/server.cert
+          key_file: /etc/server.key
+  otlp/mtls:
+    protocols:
+      grpc:
+        endpoint: :4317
+        tls:
+          client_ca_file: /etc/client.cert
           ca_file: /etc/ca.cert
           cert_file: /etc/server.cert
           key_file: /etc/server.key
