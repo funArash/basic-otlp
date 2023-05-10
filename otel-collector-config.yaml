@@ -11,13 +11,6 @@ receivers:
         tls:
           cert_file: /etc/server.cert
           key_file: /etc/server.key
-  otlp/mtls:
-    protocols:
-      grpc:
-        endpoint: :4317
-        tls:
-          cert_file: /etc/server.cert
-          key_file: /etc/server.key
 
 exporters:
   logging:
