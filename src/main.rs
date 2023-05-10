@@ -55,7 +55,7 @@ const MY_INSTANCE_NAME: &str = "MyInstance";
 // Use the variables to try and export the example to any external collector that accepts otlp
 // like: oltp itself, honeycomb or lightstep
 const ENDPOINT: &str = "OTLP_TONIC_ENDPOINT";
-const TLS_FILES: &str = "OTLP_TONIC_TLS_PATH";
+const TLS_PATH: &str = "OTLP_TONIC_TLS_PATH";
 const TLS_CA: &str = "OTLP_TONIC_TLS_CA";
 const TLS_CLIENT_CERT: &str = "OTLP_TONIC_TLS_CLIENT_CERT";
 const TLS_CLIENT_KEY: &str = "OTLP_TONIC_TLS_CLIENT_KEY";
@@ -64,7 +64,7 @@ const HEADER_PREFIX: &str = "OTLP_TONIC_";
 
 fn init_metrics() -> metrics::Result<MeterProvider> {
     let endpoint = var(ENDPOINT).unwrap_or_else(|_| {
-        panic!("You must specify and endpoint to connect to with the variable {ENDPOINT:?}.",)
+        "https://localhost:4317".to_string()
     });
     let endpoint = Url::parse(&endpoint).expect("endpoint is not a valid url");
     remove_var(ENDPOINT);
@@ -85,11 +85,11 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
     }
 
     let ca_domain = var(CA_DOMAIN).unwrap_or_else(|_| {
-        panic!("You must specify a ca DOMAIN to connect to with the variable {CA_DOMAIN:?}.",)
+        "localhost".to_string()
     });
 
-    let tls_path = var(TLS_FILES).unwrap_or_else(|_| {
-        panic!("You must specify a tls root path to connect to with the variable {TLS_FILES:?}.",)
+    let tls_path = var(TLS_PATH).unwrap_or_else(|_| {
+        var("PWD").unwrap()
     });
 
     let tls_ca = var(TLS_CA).unwrap_or_else(|_| {
