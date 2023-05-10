@@ -3,11 +3,8 @@ mod resource;
 
 use once_cell::sync::Lazy;
 use opentelemetry_api::global;
-// use opentelemetry_api::global::shutdown_tracer_provider;
-// use opentelemetry_api::trace::TraceError;
 use opentelemetry_api::{
     metrics,
-    // trace::{TraceContextExt, Tracer},
     Context,
     KeyValue,
 };
@@ -28,23 +25,6 @@ use std::{
 
 use crate::aggregator::MyAggregationSelector;
 use crate::resource::resource_new;
-
-// fn init_tracer() -> Result<sdktrace::Tracer, TraceError> {
-//     opentelemetry_otlp::new_pipeline()
-//         .tracing()
-//         .with_exporter(
-//             opentelemetry_otlp::new_exporter()
-//                 .tonic()
-//                 .with_endpoint("http://localhost:4317"),
-//         )
-//         .with_trace_config(
-//             sdktrace::config().with_resource(Resource::new(vec![KeyValue::new(
-//                 opentelemetry_semantic_conventions::resource::SERVICE_NAME,
-//                 "trace-demo",
-//             )])),
-//         )
-//         .install_batch(runtime::Tokio)
-// }
 
 const MY_NAME_SPACE: &str = "MyNameSpace";
 const RESOURCE_KEY: &str = "resource";
@@ -135,10 +115,6 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
 
     ident = Identity::from_pem(crt_pem, key_pem);
 
-    // let export_config = ExportConfig {
-    //     endpoint: "http://localhost:4317".to_string(),
-    //     ..ExportConfig::default()
-    // };
     let kvps = vec![
         KeyValue::new(RESOURCE_KEY, MY_RESOURCE_NAME),
         KeyValue::new(INSTANCE_KEY, MY_INSTANCE_NAME),
@@ -169,15 +145,9 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
         .build()
 }
 
-// const LEMONS_KEY: Key = Key::from_static_str("lemons");
-// const ANOTHER_KEY: Key = Key::from_static_str("ex.com/another");
-
 static COMMON_ATTRIBUTES: Lazy<[KeyValue; 1]> = Lazy::new(|| {
     [
-        // LEMONS_KEY.i64(10),
         KeyValue::new("A", "1"),
-        // KeyValue::new("B", "2"),
-        // KeyValue::new("C", "3"),
     ]
 });
 
@@ -190,11 +160,9 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         set_var("RUST_LOG", "debug")
     };
     env_logger::init();
-    // let _ = init_tracer()?;
     let meter_provider = init_metrics()?;
     let cx = Context::new();
 
-    // let tracer = global::tracer("ex.com/basic");
     let meter = global::meter("ex.com/basic");
 
     let gauge = meter
@@ -235,27 +203,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         .init();
     histogram.record(&cx, 5.5, COMMON_ATTRIBUTES.as_ref());
 
-    // tracer.in_span("operation", |cx| {
-    //     let span = cx.span();
-    //     span.add_event(
-    //         "Nice operation!".to_string(),
-    //         vec![Key::new("bogons").i64(100)],
-    //     );
-    //     span.set_attribute(ANOTHER_KEY.string("yes"));
-
-    //     tracer.in_span("Sub operation...", |cx| {
-    //         let span = cx.span();
-    //         span.set_attribute(LEMONS_KEY.string("five"));
-
-    //         span.add_event("Sub span event", vec![]);
-
-    //         histogram.record(&cx, 1.3, &[]);
-    //     });
-    // });
-
-    // meter_provider.force_flush(&cx)?;
     std::thread::sleep(Duration::from_millis(100));
-    // shutdown_tracer_provider();
     meter_provider.force_flush(&cx)?;
     meter_provider.shutdown()?;
 
