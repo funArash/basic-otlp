@@ -28,6 +28,8 @@ openssl req -nodes \
           -batch \
           -subj "/CN=testserver.com"
 
+chmod +r server.key
+
 openssl rsa \
           -in server.key \
           -out server.rsa
