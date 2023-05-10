@@ -103,15 +103,14 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
     let key_pem;
     let crt_file= tls_path.join("client.crt");
     println!("{:?}", crt_file);
-    let key_file= tls_path.join("client.key");
-    println!("{:?}", key_file);
     let pem = std::fs::read_to_string(crt_file);
-
     match pem {
         Ok(pem) => crt_pem = pem,
         Err(err) => panic!("{err}"), 
     }
 
+    let key_file= tls_path.join("client.key");
+    println!("{:?}", key_file);
     let pem = std::fs::read_to_string(key_file);
     match pem {
         Ok(pem) => key_pem = pem,
