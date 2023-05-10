@@ -84,36 +84,36 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
         "client.key".to_string()
     });
 
-    let ca: Certificate;
+    
     let tls_path= std::path::PathBuf::from(tls_path);
     let ca_file= tls_path.join(tls_ca);
     println!("ca file: {:?}", ca_file);
     let pem = std::fs::read_to_string(ca_file);
-    match pem {
-        Ok(pem) => ca = Certificate::from_pem(pem),
+    let ca: Certificate = match pem {
+        Ok(pem) => Certificate::from_pem(pem),
         Err(err) => panic!("{err}"), 
-    }
+    };
 
-    let ident: Identity;
-    let crt_pem;
-    let key_pem;
+    
+    
+    
     let crt_file= tls_path.join(tls_client_cert);
     println!("{:?}", crt_file);
     let pem = std::fs::read_to_string(crt_file);
-    match pem {
-        Ok(pem) => crt_pem = pem,
+    let crt_pem = match pem {
+        Ok(pem) => pem,
         Err(err) => panic!("{err}"), 
-    }
+    };
 
     let key_file= tls_path.join(tls_client_key);
     println!("{:?}", key_file);
     let pem = std::fs::read_to_string(key_file);
-    match pem {
-        Ok(pem) => key_pem = pem,
+    let key_pem = match pem {
+        Ok(pem) => pem,
         Err(err) => panic!("{err}"), 
-    }
+    };
 
-    ident = Identity::from_pem(crt_pem, key_pem);
+    let ident: Identity = Identity::from_pem(crt_pem, key_pem);
 
     let kvps = vec![
         KeyValue::new(RESOURCE_KEY, MY_RESOURCE_NAME),
