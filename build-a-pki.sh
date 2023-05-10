@@ -33,9 +33,9 @@ openssl req -nodes \
 
 chmod +r server.key
 
-openssl rsa \
-          -in server.key \
-          -out server.rsa
+# openssl rsa \
+#           -in server.key \
+#           -out server.rsa
 
 # Create a new Client Cert and Key
 openssl req -nodes \
@@ -46,9 +46,9 @@ openssl req -nodes \
           -batch \
           -subj "/CN=ponytown client"
 
-openssl rsa \
-          -in client.key \
-          -out client.rsa
+# openssl rsa \
+#           -in client.key \
+#           -out client.rsa
 
 # ------------- Signing of the Certs and the level 2 intermediate CA -----------------
 
@@ -85,11 +85,11 @@ openssl x509 -req \
           -set_serial 789 \
           -extensions v3_client -extfile openssl.cnf
 
-# Packaging..
-cat inter.cert ca.cert > server.chain
-cat server.cert inter.cert ca.cert > server.fullchain
+# # Packaging..
+# cat inter.cert ca.cert > server.chain
+# cat server.cert inter.cert ca.cert > server.fullchain
 
-cat inter.cert ca.cert > client.chain
-cat client.cert inter.cert ca.cert > client.fullchain
+# cat inter.cert ca.cert > client.chain
+# cat client.cert inter.cert ca.cert > client.fullchain
 
-openssl asn1parse -in ca.cert -out ca.der > /dev/null
+# openssl asn1parse -in ca.cert -out ca.der > /dev/null
