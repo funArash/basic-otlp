@@ -90,7 +90,7 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
     });
     let ca: Certificate;
     let tls_path= std::path::PathBuf::from(tls_path);
-    let ca_file= tls_path.join("ca.cert");
+    let ca_file= tls_path.join("inter.cert");
     println!("ca file: {:?}", ca_file);
     let pem = std::fs::read_to_string(ca_file);
     match pem {
