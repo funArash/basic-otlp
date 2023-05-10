@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+# from https://github.com/rustls/rustls/tree/main/test-ca
 
 set -xe
 
