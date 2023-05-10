@@ -56,6 +56,9 @@ const MY_INSTANCE_NAME: &str = "MyInstance";
 // like: oltp itself, honeycomb or lightstep
 const ENDPOINT: &str = "OTLP_TONIC_ENDPOINT";
 const TLS_FILES: &str = "OTLP_TONIC_TLS_PATH";
+const TLS_CA: &str = "OTLP_TONIC_TLS_CA";
+const TLS_CLIENT_CERT: &str = "OTLP_TONIC_TLS_CLIENT_CERT";
+const TLS_CLIENT_KEY: &str = "OTLP_TONIC_TLS_CLIENT_KEY";
 const CA_DOMAIN: &str = "OTLP_TONIC_CA_DOMAIN";
 const HEADER_PREFIX: &str = "OTLP_TONIC_";
 
@@ -88,9 +91,22 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
     let tls_path = var(TLS_FILES).unwrap_or_else(|_| {
         panic!("You must specify a tls root path to connect to with the variable {TLS_FILES:?}.",)
     });
+
+    let tls_ca = var(TLS_CA).unwrap_or_else(|_| {
+        "inter.cert".to_string()
+    });
+
+    let tls_client_cert = var(TLS_CLIENT_CERT).unwrap_or_else(|_| {
+        "client.cert".to_string()
+    });
+
+    let tls_client_key = var(TLS_CLIENT_KEY).unwrap_or_else(|_| {
+        "client.key".to_string()
+    });
+
     let ca: Certificate;
     let tls_path= std::path::PathBuf::from(tls_path);
-    let ca_file= tls_path.join("inter.cert");
+    let ca_file= tls_path.join(tls_ca);
     println!("ca file: {:?}", ca_file);
     let pem = std::fs::read_to_string(ca_file);
     match pem {
@@ -101,7 +117,7 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
     let ident: Identity;
     let crt_pem;
     let key_pem;
-    let crt_file= tls_path.join("client.cert");
+    let crt_file= tls_path.join(tls_client_cert);
     println!("{:?}", crt_file);
     let pem = std::fs::read_to_string(crt_file);
     match pem {
@@ -109,7 +125,7 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
         Err(err) => panic!("{err}"), 
     }
 
-    let key_file= tls_path.join("client.key");
+    let key_file= tls_path.join(tls_client_key);
     println!("{:?}", key_file);
     let pem = std::fs::read_to_string(key_file);
     match pem {
