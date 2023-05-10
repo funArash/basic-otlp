@@ -1,10 +1,4 @@
-use opentelemetry_sdk::{
-    metrics::{
-        reader::AggregationSelector,
-        InstrumentKind,
-        Aggregation,
-    },
-};
+use opentelemetry_sdk::metrics::{reader::AggregationSelector, Aggregation, InstrumentKind};
 
 #[derive(Debug)]
 pub struct MyAggregationSelector;

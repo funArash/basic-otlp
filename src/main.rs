@@ -3,25 +3,21 @@ mod resource;
 
 use once_cell::sync::Lazy;
 use opentelemetry_api::global;
-use opentelemetry_api::{
-    metrics,
-    Context,
-    KeyValue,
-};
-use opentelemetry_otlp::{WithExportConfig};
+use opentelemetry_api::{metrics, Context, KeyValue};
+use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::{metrics::MeterProvider, runtime, Resource};
-use tonic::transport::{Certificate, Identity};
-use tonic::{
-    metadata::{MetadataKey, MetadataMap},
-    transport::ClientTlsConfig,
-};
-use url::Url;
 use std::{
     env::{remove_var, set_var, var, vars},
     error::Error,
     str::FromStr,
     time::Duration,
 };
+use tonic::transport::{Certificate, Identity};
+use tonic::{
+    metadata::{MetadataKey, MetadataMap},
+    transport::ClientTlsConfig,
+};
+use url::Url;
 
 use crate::aggregator::MyAggregationSelector;
 use crate::resource::resource_new;
@@ -43,9 +39,7 @@ const CA_DOMAIN: &str = "OTLP_TONIC_CA_DOMAIN";
 const HEADER_PREFIX: &str = "OTLP_TONIC_";
 
 fn init_metrics() -> metrics::Result<MeterProvider> {
-    let endpoint = var(ENDPOINT).unwrap_or_else(|_| {
-        "https://localhost:4317".to_string()
-    });
+    let endpoint = var(ENDPOINT).unwrap_or_else(|_| "https://localhost:4317".to_string());
     let endpoint = Url::parse(&endpoint).expect("endpoint is not a valid url");
     remove_var(ENDPOINT);
 
@@ -64,53 +58,39 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
         metadata.insert(MetadataKey::from_str(&key).unwrap(), value.parse().unwrap());
     }
 
-    let ca_domain = var(CA_DOMAIN).unwrap_or_else(|_| {
-        "localhost".to_string()
-    });
+    let ca_domain = var(CA_DOMAIN).unwrap_or_else(|_| "localhost".to_string());
 
-    let tls_path = var(TLS_PATH).unwrap_or_else(|_| {
-        var("PWD").unwrap()
-    });
+    let tls_path = var(TLS_PATH).unwrap_or_else(|_| var("PWD").unwrap());
 
-    let tls_ca = var(TLS_CA).unwrap_or_else(|_| {
-        "inter.cert".to_string()
-    });
+    let tls_ca = var(TLS_CA).unwrap_or_else(|_| "inter.cert".to_string());
 
-    let tls_client_cert = var(TLS_CLIENT_CERT).unwrap_or_else(|_| {
-        "client.cert".to_string()
-    });
+    let tls_client_cert = var(TLS_CLIENT_CERT).unwrap_or_else(|_| "client.cert".to_string());
 
-    let tls_client_key = var(TLS_CLIENT_KEY).unwrap_or_else(|_| {
-        "client.key".to_string()
-    });
+    let tls_client_key = var(TLS_CLIENT_KEY).unwrap_or_else(|_| "client.key".to_string());
 
-    
-    let tls_path= std::path::PathBuf::from(tls_path);
-    let ca_file= tls_path.join(tls_ca);
+    let tls_path = std::path::PathBuf::from(tls_path);
+    let ca_file = tls_path.join(tls_ca);
     println!("ca file: {:?}", ca_file);
     let pem = std::fs::read_to_string(ca_file);
     let ca: Certificate = match pem {
         Ok(pem) => Certificate::from_pem(pem),
-        Err(err) => panic!("{err}"), 
+        Err(err) => panic!("{err}"),
     };
 
-    
-    
-    
-    let crt_file= tls_path.join(tls_client_cert);
+    let crt_file = tls_path.join(tls_client_cert);
     println!("{:?}", crt_file);
     let pem = std::fs::read_to_string(crt_file);
     let crt_pem = match pem {
         Ok(pem) => pem,
-        Err(err) => panic!("{err}"), 
+        Err(err) => panic!("{err}"),
     };
 
-    let key_file= tls_path.join(tls_client_key);
+    let key_file = tls_path.join(tls_client_key);
     println!("{:?}", key_file);
     let pem = std::fs::read_to_string(key_file);
     let key_pem = match pem {
         Ok(pem) => pem,
-        Err(err) => panic!("{err}"), 
+        Err(err) => panic!("{err}"),
     };
 
     let ident: Identity = Identity::from_pem(crt_pem, key_pem);
@@ -129,14 +109,15 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
                 .with_endpoint(endpoint.as_str())
                 .with_metadata(metadata)
                 .with_tls_config(
-                    ClientTlsConfig::new().domain_name(
-                        endpoint
-                            .host_str()
-                            .expect("the specified endpoint should have a valid host"),
-                    )
-                    .domain_name(ca_domain)
-                    .ca_certificate(ca)
-                    .identity(ident),
+                    ClientTlsConfig::new()
+                        .domain_name(
+                            endpoint
+                                .host_str()
+                                .expect("the specified endpoint should have a valid host"),
+                        )
+                        .domain_name(ca_domain)
+                        .ca_certificate(ca)
+                        .identity(ident),
                 ),
         )
         // .with_period(Duration::from_secs(0))
@@ -145,11 +126,7 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
         .build()
 }
 
-static COMMON_ATTRIBUTES: Lazy<[KeyValue; 1]> = Lazy::new(|| {
-    [
-        KeyValue::new("A", "1"),
-    ]
-});
+static COMMON_ATTRIBUTES: Lazy<[KeyValue; 1]> = Lazy::new(|| [KeyValue::new("A", "1")]);
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
@@ -175,7 +152,8 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         .with_description("A counter set to pi")
         .init();
 
-    let scounter = meter.u64_counter("some_counter")
+    let scounter = meter
+        .u64_counter("some_counter")
         .with_description("sync_counter")
         .init();
 
