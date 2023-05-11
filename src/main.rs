@@ -1,5 +1,6 @@
 mod aggregator;
 mod resource;
+mod temporality;
 
 use once_cell::sync::Lazy;
 use opentelemetry_api::global;
@@ -21,6 +22,7 @@ use url::Url;
 
 use crate::aggregator::MyAggregationSelector;
 use crate::resource::resource_new;
+use crate::temporality::MyTemporalitySelector;
 
 const MY_NAME_SPACE: &str = "MyNameSpace";
 const RESOURCE_KEY: &str = "resource";
@@ -122,6 +124,7 @@ fn init_metrics() -> metrics::Result<MeterProvider> {
         )
         // .with_period(Duration::from_secs(0))
         .with_aggregation_selector(MyAggregationSelector)
+        .with_temporality_selector(MyTemporalitySelector)
         .with_resource(Resource::new(kvps))
         .build()
 }
