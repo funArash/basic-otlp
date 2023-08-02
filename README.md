@@ -31,7 +31,8 @@ docker-compose up -d
 In another terminal run the application `cargo run`
 
 Use the browser to see the trace:
-- Jaeger at http://0.0.0.0:16686
+
+- Jaeger at <http://0.0.0.0:16686>
 
 Tear it down:
 
@@ -52,13 +53,13 @@ $ docker run  -p4317:4317 otel/opentelemetry-collector:latest
 $ cargo run
 ```
 
-# View result
+## View result
 
 You should be able to see something similar below with different time and ID in the same console that docker runs.
 
-## Span
+### Span
 
-```
+```text
 Resource labels:
      -> service.name: STRING(trace-demo)
 InstrumentationLibrarySpans #0
@@ -106,11 +107,11 @@ SpanEvent #0
          -> bogons: INT(100)
 ```
 
-## Metric
+### Metric
 
-```
-2021-11-19T04:08:36.453Z	INFO	loggingexporter/logging_exporter.go:56	MetricsExporter	{"#metrics": 1}
-2021-11-19T04:08:36.454Z	DEBUG	loggingexporter/logging_exporter.go:66	ResourceMetrics #0
+```text
+2021-11-19T04:08:36.453Z INFO loggingexporter/logging_exporter.go:56 MetricsExporter {"#metrics": 1}
+2021-11-19T04:08:36.454Z DEBUG loggingexporter/logging_exporter.go:66 ResourceMetrics #0
 Resource labels:
      -> service.name: STRING(unknown_service)
 InstrumentationLibraryMetrics #0
@@ -132,8 +133,8 @@ Timestamp: 2021-11-19 04:08:36.297279 +0000 UTC
 Value: 1.000000
 ```
 
-
 GRPC with tls
-```
+
+```bash
 env OTLP_TONIC_ENDPOINT=https://localhost:4317 OTLP_TONIC_TLS_PATH=$(pwd) OTLP_TONIC_CA_DOMAIN=testserver.com cargo run
 ```
