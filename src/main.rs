@@ -160,7 +160,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         .with_description("sync_counter")
         .init();
 
-    scounter.add(&cx, 100, COMMON_ATTRIBUTES.as_ref());
+    scounter.add(100, COMMON_ATTRIBUTES.as_ref());
     println!("{:?}", scounter);
 
     gauge.observe(std::f64::consts::E, COMMON_ATTRIBUTES.as_ref());
@@ -182,7 +182,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         .with_unit(metrics::Unit::new("cm"))
         .with_description("Some HSTG")
         .init();
-    histogram.record(&cx, 5.5, COMMON_ATTRIBUTES.as_ref());
+    histogram.record(5.5, COMMON_ATTRIBUTES.as_ref());
 
     std::thread::sleep(Duration::from_millis(100));
     meter_provider.force_flush(&cx)?;
