@@ -3,8 +3,7 @@ mod resource;
 mod temporality;
 
 use once_cell::sync::Lazy;
-use opentelemetry_api::global;
-use opentelemetry_api::{metrics, Context, KeyValue};
+use opentelemetry_api::{metrics, metrics::MeterProvider as _, Context, KeyValue};
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::{metrics::MeterProvider, runtime, Resource};
 use std::{
@@ -143,7 +142,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     let meter_provider = init_metrics()?;
     let cx = Context::new();
 
-    let meter = global::meter("ex.com/basic");
+    let meter = meter_provider.meter("ex.com/basic");
 
     let gauge = meter
         .f64_observable_gauge("gauge")
